@@ -86,7 +86,9 @@ class Logger {
     }
 
     companion object {
-        private val shared = Logger()
+        val shared = Logger()
+
+        fun flow(tag: String? = null, level: LogLevel = LogLevel.DEBUG) = shared.flow(tag, level)
 
         fun log(message: Any, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) {
             shared.log(message, tag, level, secure, metadata)
@@ -94,8 +96,6 @@ class Logger {
         fun log(message: Any, tag: String? = null, level: LogLevel, secure: Boolean = false) {
             shared.logWithoutMetadata(message, tag, level, secure)
         }
-
-        fun flow(tag: String? = null, level: LogLevel = LogLevel.DEBUG) = shared.flow(tag, level)
 
         fun fault(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
         fun error(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
