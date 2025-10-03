@@ -1,12 +1,10 @@
-package com.thysmesi
+package com.thysmesi.logger
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

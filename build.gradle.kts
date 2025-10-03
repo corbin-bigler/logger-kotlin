@@ -3,7 +3,7 @@ plugins {
     `java-library`
 }
 
-group = "com.thysmesi"
+group = "com.thysmesi.logger"
 version = "0.1"
 
 repositories {

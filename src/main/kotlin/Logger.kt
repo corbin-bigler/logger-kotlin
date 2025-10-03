@@ -1,4 +1,4 @@
-package com.thysmesi
+package com.thysmesi.logger
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +20,7 @@ class Logger {
 
     fun tagged(tag: String): Tagged = Tagged(this, tag)
 
-    fun log(message: Any, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) {
+    fun log(message: Any?, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) {
         logFlow.tryEmit(
             Log(
                 tag = tag,
@@ -33,7 +33,7 @@ class Logger {
     }
 
     private fun logWithoutMetadata(
-        message: Any,
+        message: Any?,
         tag: String? = null,
         level: LogLevel,
         secure: Boolean = false
@@ -62,27 +62,27 @@ class Logger {
         log(message, resolvedTag, level, secure, metadata)
     }
 
-    fun fault(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
-    fun error(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
-    fun info(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
-    fun debug(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
+    fun fault(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
+    fun error(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
+    fun info(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
+    fun debug(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
 
     class Tagged internal constructor(
         private val logger: Logger,
         val tag: String
     ) {
-        fun log(message: Any, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = emptyMap()) {
+        fun log(message: Any?, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = emptyMap()) {
             logger.log(message, tag, level, secure, metadata)
         }
 
-        fun log(message: Any, level: LogLevel, secure: Boolean = false) {
+        fun log(message: Any?, level: LogLevel, secure: Boolean = false) {
             logger.logWithoutMetadata(message, tag, level, secure)
         }
 
-        fun fault(message: Any, secure: Boolean = false) = log(message, LogLevel.FAULT, secure)
-        fun error(message: Any, secure: Boolean = false) = log(message, LogLevel.ERROR, secure)
-        fun info(message: Any, secure: Boolean = false) = log(message, LogLevel.INFO, secure)
-        fun debug(message: Any, secure: Boolean = false) = log(message, LogLevel.DEBUG, secure)
+        fun fault(message: Any?, secure: Boolean = false) = log(message, LogLevel.FAULT, secure)
+        fun error(message: Any?, secure: Boolean = false) = log(message, LogLevel.ERROR, secure)
+        fun info(message: Any?, secure: Boolean = false) = log(message, LogLevel.INFO, secure)
+        fun debug(message: Any?, secure: Boolean = false) = log(message, LogLevel.DEBUG, secure)
     }
 
     companion object {
@@ -90,16 +90,16 @@ class Logger {
 
         fun flow(tag: String? = null, level: LogLevel = LogLevel.DEBUG) = shared.flow(tag, level)
 
-        fun log(message: Any, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) {
+        fun log(message: Any?, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) {
             shared.log(message, tag, level, secure, metadata)
         }
-        fun log(message: Any, tag: String? = null, level: LogLevel, secure: Boolean = false) {
+        fun log(message: Any?, tag: String? = null, level: LogLevel, secure: Boolean = false) {
             shared.logWithoutMetadata(message, tag, level, secure)
         }
 
-        fun fault(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
-        fun error(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
-        fun info(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
-        fun debug(message: Any, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
+        fun fault(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
+        fun error(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
+        fun info(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
+        fun debug(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
     }
 }

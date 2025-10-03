@@ -1,4 +1,4 @@
-package com.thysmesi
+package com.thysmesi.logger
 
 import java.time.Instant
 

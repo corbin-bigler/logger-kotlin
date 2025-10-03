@@ -1,4 +1,4 @@
-package com.thysmesi
+package com.thysmesi.logger
 
 enum class LogLevel(val value: Int) {
     FAULT(1),
