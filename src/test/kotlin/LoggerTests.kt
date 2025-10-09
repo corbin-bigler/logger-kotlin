@@ -14,14 +14,15 @@ class LoggerTests {
         val message = UUID.randomUUID().toString()
         val flow = Logger.flow()
 
-        backgroundScope.launch {
+        launch {
             flow.collect {
                 assertEquals(message, it.message)
                 cancel()
             }
         }
-
-        Logger.debug(message = message, tag = UUID.randomUUID().toString())
+        launch {
+            Logger.debug(message = message, tag = UUID.randomUUID().toString())
+        }
     }
 
     @Test
@@ -30,7 +31,7 @@ class LoggerTests {
         val message = UUID.randomUUID().toString()
 
         val flow = Logger.flow(tag = tag, level = LogLevel.ERROR).take(2)
-        backgroundScope.launch {
+        launch {
             var count = 0
             println("a")
             flow.collect { log ->
@@ -47,11 +48,12 @@ class LoggerTests {
                 count++
             }
         }
-
-        Logger.debug(message, tag) // too low level, skipped
-        Logger.info(message, tag)  // too low level, skipped
-        Logger.error(message, tag) // should be collected
-        Logger.error(message, UUID.randomUUID().toString()) // wrong tag, skipped
-        Logger.fault(message, tag) // should be collected
+        launch {
+            Logger.debug(message, tag)
+            Logger.info(message, tag)
+            Logger.error(message, tag)
+            Logger.error(message, UUID.randomUUID().toString())
+            Logger.fault(message, tag)
+        }
     }
 }

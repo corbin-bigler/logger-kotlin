@@ -36,12 +36,13 @@ class Logger {
         message: Any?,
         tag: String? = null,
         level: LogLevel,
-        secure: Boolean = false
+        secure: Boolean = false,
+        traceIndex: Int
     ) {
         var resolvedTag = tag ?: "Unknown"
         val metadata = mutableMapOf<String, Any>()
 
-        val trace = Throwable().stackTrace.getOrNull(5)
+        val trace = Throwable().stackTrace.getOrNull(traceIndex)
         if (trace != null) {
             val file = trace.fileName
             if (file != null) metadata["file"] = file
@@ -62,6 +63,7 @@ class Logger {
         log(message, resolvedTag, level, secure, metadata)
     }
 
+    fun log(message: Any?, tag: String? = null, level: LogLevel, secure: Boolean = false) = logWithoutMetadata(message, tag, level, secure, 4)
     fun fault(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
     fun error(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
     fun info(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
@@ -71,12 +73,14 @@ class Logger {
         private val logger: Logger,
         val tag: String
     ) {
+        fun flow(level: LogLevel = LogLevel.DEBUG) = logger.flow(tag, level)
+
         fun log(message: Any?, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = emptyMap()) {
             logger.log(message, tag, level, secure, metadata)
         }
 
         fun log(message: Any?, level: LogLevel, secure: Boolean = false) {
-            logger.logWithoutMetadata(message, tag, level, secure)
+            logger.logWithoutMetadata(message, tag, level, secure, 5)
         }
 
         fun fault(message: Any?, secure: Boolean = false) = log(message, LogLevel.FAULT, secure)
@@ -94,7 +98,7 @@ class Logger {
             shared.log(message, tag, level, secure, metadata)
         }
         fun log(message: Any?, tag: String? = null, level: LogLevel, secure: Boolean = false) {
-            shared.logWithoutMetadata(message, tag, level, secure)
+            shared.logWithoutMetadata(message, tag, level, secure, 5)
         }
 
         fun fault(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
