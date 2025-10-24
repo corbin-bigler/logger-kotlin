@@ -1,4 +1,4 @@
-package com.thysmesi.logger
+package com.corbinbigler.logger
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first

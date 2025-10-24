@@ -3,7 +3,7 @@ plugins {
     `java-library`
 }
 
-group = "com.thysmesi.logger"
+group = "com.corbinbigler.logger"
 version = "0.1"
 
 repositories {
