@@ -76,7 +76,7 @@ class Logger private constructor(
     fun debug(message: Any?, tag: String? = defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
 
     companion object {
-        private val shared = Logger()
+        val shared = Logger()
 
         fun flow(tag: String? = shared.defaultTag, level: LogLevel = LogLevel.DEBUG) = shared.flow(tag, level)
         fun tagged(tag: String) = shared.tagged(tag)
