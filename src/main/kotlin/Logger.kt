@@ -5,20 +5,26 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 
-class Logger {
-    private val logFlow = MutableSharedFlow<Log>(
-        replay = 0,
-        extraBufferCapacity = Int.MAX_VALUE,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
+class Logger private constructor(
+    val defaultTag: String?,
+    private val logFlow: MutableSharedFlow<Log>
+) {
+    constructor(defaultTag: String? = null): this(
+        defaultTag = defaultTag,
+        logFlow = MutableSharedFlow(
+            replay = 0,
+            extraBufferCapacity = Int.MAX_VALUE,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
     )
+
+    fun tagged(tag: String): Logger { return Logger(tag, logFlow) }
 
     fun flow(tag: String? = null, level: LogLevel = LogLevel.DEBUG): Flow<Log> {
         return logFlow.filter { log ->
             (tag?.let { it == log.tag } ?: true) && log.level.value <= level.value
         }
     }
-
-    fun tagged(tag: String): Tagged = Tagged(this, tag)
 
     fun log(message: Any?, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) {
         logFlow.tryEmit(
@@ -34,7 +40,7 @@ class Logger {
 
     private fun logWithoutMetadata(
         message: Any?,
-        tag: String? = null,
+        tag: String? = defaultTag,
         level: LogLevel,
         secure: Boolean = false,
         traceIndex: Int
@@ -63,47 +69,25 @@ class Logger {
         log(message, resolvedTag, level, secure, metadata)
     }
 
-    fun log(message: Any?, tag: String? = null, level: LogLevel, secure: Boolean = false) = logWithoutMetadata(message, tag, level, secure, 4)
-    fun fault(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
-    fun error(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
-    fun info(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
-    fun debug(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
-
-    class Tagged internal constructor(
-        private val logger: Logger,
-        val tag: String
-    ) {
-        fun flow(level: LogLevel = LogLevel.DEBUG) = logger.flow(tag, level)
-
-        fun log(message: Any?, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = emptyMap()) {
-            logger.log(message, tag, level, secure, metadata)
-        }
-
-        fun log(message: Any?, level: LogLevel, secure: Boolean = false) {
-            logger.logWithoutMetadata(message, tag, level, secure, 5)
-        }
-
-        fun fault(message: Any?, secure: Boolean = false) = log(message, LogLevel.FAULT, secure)
-        fun error(message: Any?, secure: Boolean = false) = log(message, LogLevel.ERROR, secure)
-        fun info(message: Any?, secure: Boolean = false) = log(message, LogLevel.INFO, secure)
-        fun debug(message: Any?, secure: Boolean = false) = log(message, LogLevel.DEBUG, secure)
-    }
+    fun log(message: Any?, tag: String? = defaultTag, level: LogLevel, secure: Boolean = false) = logWithoutMetadata(message, tag, level, secure, 4)
+    fun fault(message: Any?, tag: String? = defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
+    fun error(message: Any?, tag: String? = defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
+    fun info(message: Any?, tag: String? = defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
+    fun debug(message: Any?, tag: String? = defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
 
     companion object {
-        val shared = Logger()
+        private val shared = Logger()
 
-        fun flow(tag: String? = null, level: LogLevel = LogLevel.DEBUG) = shared.flow(tag, level)
+        fun flow(tag: String? = shared.defaultTag, level: LogLevel = LogLevel.DEBUG) = shared.flow(tag, level)
+        fun tagged(tag: String) = shared.tagged(tag)
 
-        fun log(message: Any?, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) {
+        fun log(message: Any?, tag: String, level: LogLevel, secure: Boolean = false, metadata: Map<String, Any> = mapOf()) =
             shared.log(message, tag, level, secure, metadata)
-        }
-        fun log(message: Any?, tag: String? = null, level: LogLevel, secure: Boolean = false) {
+        fun log(message: Any?, tag: String? = shared.defaultTag, level: LogLevel, secure: Boolean = false) =
             shared.logWithoutMetadata(message, tag, level, secure, 5)
-        }
-
-        fun fault(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
-        fun error(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
-        fun info(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
-        fun debug(message: Any?, tag: String? = null, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
+        fun fault(message: Any?, tag: String? = shared.defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.FAULT, secure)
+        fun error(message: Any?, tag: String? = shared.defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.ERROR, secure)
+        fun info(message: Any?, tag: String? = shared.defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.INFO, secure)
+        fun debug(message: Any?, tag: String? = shared.defaultTag, secure: Boolean = false) = log(message, tag, LogLevel.DEBUG, secure)
     }
 }
